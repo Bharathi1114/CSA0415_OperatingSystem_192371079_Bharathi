@@ -1,0 +1,69 @@
+#include <stdio.h>
+
+int main()
+{
+    int n, i, time = 0, done = 0;
+    int at[10], bt[10], rt[10], pr[10];
+    int ct[10], wt[10], tat[10];
+    int best;
+    float avgwt = 0, avgtat = 0;
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    for (i = 0; i < n; i++)
+    {
+        printf("Enter arrival time, burst time and priority of P%d: ", i + 1);
+        scanf("%d%d%d", &at[i], &bt[i], &pr[i]);
+
+        rt[i] = bt[i];
+    }
+
+    while (done < n)
+    {
+        best = -1;
+
+        for (i = 0; i < n; i++)
+        {
+            if (at[i] <= time && rt[i] > 0)
+            {
+                if (best == -1 || pr[i] < pr[best])
+                    best = i;
+            }
+        }
+
+        if (best == -1)
+        {
+            time++;
+            continue;
+        }
+
+        rt[best]--;
+        time++;
+
+        if (rt[best] == 0)
+        {
+            ct[best] = time;
+            done++;
+        }
+    }
+
+    printf("\nProcess\tCT\tWT\tTAT\n");
+
+    for (i = 0; i < n; i++)
+    {
+        tat[i] = ct[i] - at[i];
+        wt[i] = tat[i] - bt[i];
+
+        avgwt += wt[i];
+        avgtat += tat[i];
+
+        printf("P%d\t%d\t%d\t%d\n",
+               i + 1, ct[i], wt[i], tat[i]);
+    }
+
+    printf("Average WT = %.2f\n", avgwt / n);
+    printf("Average TAT = %.2f\n", avgtat / n);
+
+    return 0;
+}
