@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+struct message
+{
+    long type;
+    char text[100];
+};
+
+int main()
+{
+    int id;
+    struct message msg;
+    pid_t pid;
+
+    id = msgget(IPC_PRIVATE, IPC_CREAT | 0666);
+
+    if (id < 0)
+    {
+        printf("Message queue creation failed\n");
+        return 1;
+    }
+
+    pid = fork();
+
+    if (pid == 0)
+    {
+        msg.type = 1;
+        snprintf(msg.text, sizeof(msg.text), "Hello from child");
+
+        msgsnd(id, &msg, sizeof(msg.text), 0);
+    }
+    else if (pid > 0)
+    {
+        wait(NULL);
+
+        msgrcv(id, &msg, sizeof(msg.text), 1, 0);
+
+        printf("Received message: %s\n", msg.text);
+
+        msgctl(id, IPC_RMID, NULL);
+    }
+    else
+    {
+        printf("Process creation failed\n");
+        msgctl(id, IPC_RMID, NULL);
+        return 1;
+    }
+
+    return 0;
+}
