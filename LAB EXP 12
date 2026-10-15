@@ -1,0 +1,97 @@
+/*
+ * Dining Philosophers simulation (POSIX threads).
+ * Build: gcc dining_philosophers.c -o dining_philosophers -pthread
+ */
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define PHILOSOPHER_COUNT 5
+#define MEALS_PER_PHILOSOPHER 3
+
+typedef struct {
+    int id;
+} Philosopher;
+
+static pthread_mutex_t forks[PHILOSOPHER_COUNT];
+static pthread_mutex_t print_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+static void log_state(int id, const char *state) {
+    pthread_mutex_lock(&print_mutex);
+    printf("Philosopher %d %s\n", id, state);
+    pthread_mutex_unlock(&print_mutex);
+}
+
+static void pause_briefly(unsigned int milliseconds) {
+    struct timespec delay;
+    delay.tv_sec = milliseconds / 1000;
+    delay.tv_nsec = (long)(milliseconds % 1000) * 1000000L;
+    nanosleep(&delay, NULL);
+}
+
+static void *philosopher_life(void *argument) {
+    Philosopher *philosopher = (Philosopher *)argument;
+    int id = philosopher->id;
+    int left_fork = id;
+    int right_fork = (id + 1) % PHILOSOPHER_COUNT;
+
+    for (int meal = 1; meal <= MEALS_PER_PHILOSOPHER; ++meal) {
+        log_state(id, "is thinking.");
+        pause_briefly(100 + (unsigned int)(id * 37));
+
+        /* Global fork ordering prevents a circular wait, so deadlock cannot form. */
+        int first_fork = left_fork < right_fork ? left_fork : right_fork;
+        int second_fork = left_fork < right_fork ? right_fork : left_fork;
+
+        pthread_mutex_lock(&forks[first_fork]);
+        pthread_mutex_lock(&forks[second_fork]);
+
+        log_state(id, "is eating.");
+        pause_briefly(80);
+
+        pthread_mutex_unlock(&forks[second_fork]);
+        pthread_mutex_unlock(&forks[first_fork]);
+
+        pthread_mutex_lock(&print_mutex);
+        printf("Philosopher %d finished meal %d of %d.\n",
+               id, meal, MEALS_PER_PHILOSOPHER);
+        pthread_mutex_unlock(&print_mutex);
+    }
+
+    log_state(id, "has finished all meals.");
+    return NULL;
+}
+
+int main(void) {
+    pthread_t threads[PHILOSOPHER_COUNT];
+    Philosopher philosophers[PHILOSOPHER_COUNT];
+
+    for (int i = 0; i < PHILOSOPHER_COUNT; ++i) {
+        if (pthread_mutex_init(&forks[i], NULL) != 0) {
+            fprintf(stderr, "Could not initialize fork %d.\n", i);
+            return EXIT_FAILURE;
+        }
+    }
+
+    for (int i = 0; i < PHILOSOPHER_COUNT; ++i) {
+        philosophers[i].id = i;
+        if (pthread_create(&threads[i], NULL, philosopher_life,
+                           &philosophers[i]) != 0) {
+            fprintf(stderr, "Could not create philosopher thread %d.\n", i);
+            return EXIT_FAILURE;
+        }
+    }
+
+    for (int i = 0; i < PHILOSOPHER_COUNT; ++i) {
+        pthread_join(threads[i], NULL);
+    }
+
+    for (int i = 0; i < PHILOSOPHER_COUNT; ++i) {
+        pthread_mutex_destroy(&forks[i]);
+    }
+    pthread_mutex_destroy(&print_mutex);
+
+    puts("All philosophers have finished dining.");
+    return EXIT_SUCCESS;
+}
