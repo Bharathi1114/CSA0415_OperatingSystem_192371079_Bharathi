@@ -1,0 +1,67 @@
+#include <pthread.h>
+#include <semaphore.h>
+#include <stdio.h>
+
+#define READERS 3
+#define WRITERS 2
+#define ROUNDS 3
+
+int shared_value = 0;
+int reader_count = 0;
+
+sem_t resource;
+sem_t reader_mutex;
+
+void *reader(void *arg) {
+    long id = (long)arg;
+
+    for (int i = 0; i < ROUNDS; i++) {
+        sem_wait(&reader_mutex);
+        reader_count++;
+        if (reader_count == 1)
+            sem_wait(&resource);
+        sem_post(&reader_mutex);
+
+        printf("Reader %ld reads %d\n", id, shared_value);
+
+        sem_wait(&reader_mutex);
+        reader_count--;
+        if (reader_count == 0)
+            sem_post(&resource);
+        sem_post(&reader_mutex);
+    }
+    return NULL;
+}
+
+void *writer(void *arg) {
+    long id = (long)arg;
+
+    for (int i = 0; i < ROUNDS; i++) {
+        sem_wait(&resource);
+        shared_value++;
+        printf("Writer %ld writes %d\n", id, shared_value);
+        sem_post(&resource);
+    }
+    return NULL;
+}
+
+int main(void) {
+    pthread_t readers[READERS], writers[WRITERS];
+
+    sem_init(&resource, 0, 1);
+    sem_init(&reader_mutex, 0, 1);
+
+    for (long i = 0; i < READERS; i++)
+        pthread_create(&readers[i], NULL, reader, (void *)(i + 1));
+    for (long i = 0; i < WRITERS; i++)
+        pthread_create(&writers[i], NULL, writer, (void *)(i + 1));
+
+    for (int i = 0; i < READERS; i++)
+        pthread_join(readers[i], NULL);
+    for (int i = 0; i < WRITERS; i++)
+        pthread_join(writers[i], NULL);
+
+    sem_destroy(&resource);
+    sem_destroy(&reader_mutex);
+    return 0;
+}
