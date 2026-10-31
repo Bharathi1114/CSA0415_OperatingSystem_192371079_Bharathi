@@ -1,0 +1,98 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_USERS 50
+#define MAX_FILES 50
+#define NAME_LEN 64
+
+typedef struct {
+    char name[NAME_LEN];
+    char files[MAX_FILES][NAME_LEN];
+    int count;
+} User;
+
+int main(void) {
+    User users[MAX_USERS] = {0};
+    char user[NAME_LEN], file[NAME_LEN];
+    int user_count = 0, choice;
+
+    for (;;) {
+        printf("\n1 Create user  2 Create file  3 List user files\n"
+               "4 Search file  5 Delete file  6 List users  0 Exit\nChoice: ");
+        if (scanf("%d", &choice) != 1) return 1;
+        if (choice == 0) break;
+
+        if (choice == 6) {
+            for (int i = 0; i < user_count; i++) puts(users[i].name);
+            continue;
+        }
+
+        if (choice == 1) {
+            printf("User name (no spaces): ");
+            if (scanf("%63s", user) != 1) return 1;
+
+            int exists = 0;
+            for (int i = 0; i < user_count; i++)
+                if (strcmp(users[i].name, user) == 0) exists = 1;
+
+            if (exists) puts("User already exists.");
+            else if (user_count == MAX_USERS) puts("User directory is full.");
+            else {
+                strcpy(users[user_count++].name, user);
+                puts("User created.");
+            }
+            continue;
+        }
+
+        if (choice < 2 || choice > 5) {
+            puts("Invalid choice.");
+            continue;
+        }
+
+        printf("User name: ");
+        if (scanf("%63s", user) != 1) return 1;
+
+        int u = -1;
+        for (int i = 0; i < user_count; i++)
+            if (strcmp(users[i].name, user) == 0) u = i;
+
+        if (u == -1) {
+            puts("User not found.");
+            continue;
+        }
+
+        if (choice == 3) {
+            if (users[u].count == 0) puts("No files.");
+            for (int i = 0; i < users[u].count; i++)
+                puts(users[u].files[i]);
+            continue;
+        }
+
+        printf("File name: ");
+        if (scanf("%63s", file) != 1) return 1;
+
+        int f = -1;
+        for (int i = 0; i < users[u].count; i++)
+            if (strcmp(users[u].files[i], file) == 0) f = i;
+
+        if (choice == 2) {
+            if (f != -1) puts("File already exists for this user.");
+            else if (users[u].count == MAX_FILES) puts("User directory is full.");
+            else {
+                strcpy(users[u].files[users[u].count++], file);
+                puts("File created.");
+            }
+        } else if (choice == 4) {
+            puts(f != -1 ? "File found." : "File not found.");
+        } else if (f == -1) {
+            puts("File not found.");
+        } else {
+            for (int i = f; i < users[u].count - 1; i++)
+                strcpy(users[u].files[i], users[u].files[i + 1]);
+            users[u].count--;
+            puts("File deleted.");
+        }
+    }
+
+    return 0;
+}
