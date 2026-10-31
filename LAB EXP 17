@@ -1,0 +1,72 @@
+#include <stdio.h>
+
+#define MAX_P 20
+#define MAX_R 20
+
+int main(void) {
+    int n, m;
+    int allocation[MAX_P][MAX_R], max[MAX_P][MAX_R], need[MAX_P][MAX_R];
+    int available[MAX_R], work[MAX_R];
+    int finished[MAX_P] = {0}, sequence[MAX_P], count = 0;
+
+    printf("Number of processes and resource types: ");
+    if (scanf("%d%d", &n, &m) != 2 ||
+        n < 1 || n > MAX_P || m < 1 || m > MAX_R) return 1;
+
+    puts("Enter Allocation matrix:");
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            if (scanf("%d", &allocation[i][j]) != 1 ||
+                allocation[i][j] < 0) return 1;
+
+    puts("Enter Max matrix:");
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            if (scanf("%d", &max[i][j]) != 1 ||
+                max[i][j] < allocation[i][j]) {
+                puts("Invalid maximum claim.");
+                return 1;
+            }
+            need[i][j] = max[i][j] - allocation[i][j];
+        }
+    }
+
+    printf("Enter %d available resource counts: ", m);
+    for (int j = 0; j < m; j++)
+        if (scanf("%d", &available[j]) != 1 || available[j] < 0)
+            return 1;
+
+    for (int j = 0; j < m; j++) work[j] = available[j];
+
+    while (count < n) {
+        int progressed = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (finished[i]) continue;
+
+            int can_finish = 1;
+            for (int j = 0; j < m; j++)
+                if (need[i][j] > work[j]) can_finish = 0;
+
+            if (can_finish) {
+                for (int j = 0; j < m; j++)
+                    work[j] += allocation[i][j];
+                finished[i] = 1;
+                sequence[count++] = i;
+                progressed = 1;
+            }
+        }
+
+        if (!progressed) break;
+    }
+
+    if (count == n) {
+        printf("Safe state. Safe sequence: ");
+        for (int i = 0; i < n; i++)
+            printf("P%d%s", sequence[i], i == n - 1 ? "\n" : " -> ");
+    } else {
+        puts("Unsafe state: no safe sequence exists.");
+    }
+
+    return 0;
+}
