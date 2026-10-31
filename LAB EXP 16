@@ -1,0 +1,88 @@
+#include <stdio.h>
+
+#define DB_FILE "employees.dat"
+#define NAME_LEN 64
+
+typedef struct {
+    int id;
+    char name[NAME_LEN];
+    double salary;
+} Employee;
+
+long find_record(FILE *fp, int id) {
+    Employee e;
+    long position = 0;
+
+    rewind(fp);
+    while (fread(&e, sizeof(e), 1, fp) == 1) {
+        if (e.id == id) return position;
+        position++;
+    }
+    return -1;
+}
+
+int main(void) {
+    FILE *fp = fopen(DB_FILE, "r+b");
+    if (fp == NULL) fp = fopen(DB_FILE, "w+b");
+    if (fp == NULL) {
+        perror(DB_FILE);
+        return 1;
+    }
+
+    int choice;
+    for (;;) {
+        printf("\n1 Add/update  2 Read by ID  3 List  0 Exit\nChoice: ");
+        if (scanf("%d", &choice) != 1) break;
+        if (choice == 0) break;
+
+        if (choice == 1) {
+            Employee e;
+            printf("ID: ");
+            if (scanf("%d", &e.id) != 1 || e.id <= 0) break;
+            printf("Name (single word): ");
+            if (scanf("%63s", e.name) != 1) break;
+            printf("Salary: ");
+            if (scanf("%lf", &e.salary) != 1 || e.salary < 0) break;
+
+            long record = find_record(fp, e.id);
+            if (record == -1) {
+                fseek(fp, 0, SEEK_END);
+            } else {
+                fseek(fp, record * (long)sizeof(e), SEEK_SET);
+            }
+
+            if (fwrite(&e, sizeof(e), 1, fp) != 1) {
+                perror("Write");
+            } else {
+                fflush(fp);
+                puts(record == -1 ? "Record added." : "Record updated.");
+            }
+        } else if (choice == 2) {
+            int id;
+            Employee e;
+            printf("ID: ");
+            if (scanf("%d", &id) != 1) break;
+
+            long record = find_record(fp, id);
+            if (record == -1) {
+                puts("Employee not found.");
+            } else {
+                fseek(fp, record * (long)sizeof(e), SEEK_SET);
+                if (fread(&e, sizeof(e), 1, fp) == 1)
+                    printf("ID: %d  Name: %s  Salary: %.2f\n",
+                           e.id, e.name, e.salary);
+            }
+        } else if (choice == 3) {
+            Employee e;
+            rewind(fp);
+            puts("ID\tName\tSalary");
+            while (fread(&e, sizeof(e), 1, fp) == 1)
+                printf("%d\t%s\t%.2f\n", e.id, e.name, e.salary);
+        } else {
+            puts("Invalid choice.");
+        }
+    }
+
+    fclose(fp);
+    return 0;
+}
