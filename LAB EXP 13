@@ -1,0 +1,65 @@
+#include <stdio.h>
+
+#define MAX 100
+
+int main(void) {
+    int blocks[MAX], processes[MAX], allocation[MAX];
+    int used[MAX] = {0};
+    int nb, np, strategy;
+
+    printf("Number of blocks (1-%d): ", MAX);
+    if (scanf("%d", &nb) != 1 || nb < 1 || nb > MAX) return 1;
+
+    printf("Enter the size of each block: ");
+    for (int i = 0; i < nb; i++)
+        if (scanf("%d", &blocks[i]) != 1 || blocks[i] <= 0) return 1;
+
+    printf("Number of processes (1-%d): ", MAX);
+    if (scanf("%d", &np) != 1 || np < 1 || np > MAX) return 1;
+
+    printf("Enter the memory required by each process: ");
+    for (int i = 0; i < np; i++)
+        if (scanf("%d", &processes[i]) != 1 || processes[i] <= 0) return 1;
+
+    printf("Choose strategy: 1 First-fit, 2 Best-fit, 3 Worst-fit: ");
+    if (scanf("%d", &strategy) != 1 || strategy < 1 || strategy > 3)
+        return 1;
+
+    for (int p = 0; p < np; p++) {
+        allocation[p] = -1;
+        int candidate = -1;
+
+        for (int b = 0; b < nb; b++) {
+            if (!used[b] && blocks[b] >= processes[p]) {
+                if (strategy == 1) {
+                    candidate = b;
+                    break;
+                }
+                if (candidate == -1 ||
+                    (strategy == 2 && blocks[b] < blocks[candidate]) ||
+                    (strategy == 3 && blocks[b] > blocks[candidate])) {
+                    candidate = b;
+                }
+            }
+        }
+
+        if (candidate != -1) {
+            allocation[p] = candidate;
+            used[candidate] = 1;
+        }
+    }
+
+    printf("\nProcess\tRequired\tBlock\tUnused space\n");
+    for (int p = 0; p < np; p++) {
+        if (allocation[p] == -1) {
+            printf("P%d\t%d\t\tNot allocated\n", p + 1, processes[p]);
+        } else {
+            int b = allocation[p];
+            printf("P%d\t%d\t\tB%d\t%d\n",
+                   p + 1, processes[p], b + 1,
+                   blocks[b] - processes[p]);
+        }
+    }
+
+    return 0;
+}
