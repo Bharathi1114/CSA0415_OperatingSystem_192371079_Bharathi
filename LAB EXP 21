@@ -1,0 +1,17 @@
+#include <stdio.h>
+#define MAX 100
+int main(void) {
+    int b[MAX], p[MAX], n, m, used[MAX] = {0};
+    printf("Number of blocks and processes: ");
+    if (scanf("%d%d", &n, &m) != 2 || n < 1 || n > MAX || m < 1 || m > MAX) return 1;
+    printf("Enter block sizes: "); for (int i=0;i<n;i++) if (scanf("%d",&b[i])!=1 || b[i]<=0) return 1;
+    printf("Enter process sizes: "); for (int i=0;i<m;i++) if (scanf("%d",&p[i])!=1 || p[i]<=0) return 1;
+    puts("Process\tSize\tBlock");
+    for (int i=0;i<m;i++) {
+        int best=-1;
+        for (int j=0;j<n;j++) if (!used[j] && b[j]>=p[i] && (best<0 || b[j]>b[best])) best=j;
+        if (best<0) printf("P%d\t%d\tNot allocated\n",i+1,p[i]);
+        else { used[best]=1; printf("P%d\t%d\tB%d (unused %d)\n",i+1,p[i],best+1,b[best]-p[i]); }
+    }
+    return 0;
+}
