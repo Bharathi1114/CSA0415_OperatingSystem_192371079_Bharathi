@@ -1,0 +1,47 @@
+#include <pthread.h>
+#include <stdio.h>
+
+pthread_t first;
+
+void *worker(void *arg) {
+    (void)arg;
+    printf("Thread running\n");
+    pthread_exit(NULL);
+}
+
+int main(void) {
+    pthread_t second;
+
+    pthread_create(&first, NULL, worker, NULL);
+    pthread_create(&second, NULL, worker, NULL);
+
+    printf("Threads equal? %s\n",
+           pthread_equal(first, second) ? "Yes" : "No");
+
+    pthread_join(first, NULL);
+    pthread_join(second, NULL);
+    return 0;
+}#include <pthread.h>
+#include <stdio.h>
+
+pthread_t first;
+
+void *worker(void *arg) {
+    (void)arg;
+    printf("Thread running\n");
+    pthread_exit(NULL);
+}
+
+int main(void) {
+    pthread_t second;
+
+    pthread_create(&first, NULL, worker, NULL);
+    pthread_create(&second, NULL, worker, NULL);
+
+    printf("Threads equal? %s\n",
+           pthread_equal(first, second) ? "Yes" : "No");
+
+    pthread_join(first, NULL);
+    pthread_join(second, NULL);
+    return 0;
+}
