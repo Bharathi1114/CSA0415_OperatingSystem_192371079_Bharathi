@@ -1,0 +1,57 @@
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <stdio.h>
+
+int main(void) {
+    int fd = open("sample.txt", O_CREAT | O_RDWR, 0644);
+    if (fd < 0) { perror("open"); return 1; }
+
+    int flags = fcntl(fd, F_GETFL);
+    printf("File flags: %d\n", flags);
+    write(fd, "Example\n", 8);
+    printf("Current offset: %ld\n", (long)lseek(fd, 0, SEEK_CUR));
+
+    struct stat info;
+    if (stat("sample.txt", &info) == 0)
+        printf("File size: %ld bytes\n", (long)info.st_size);
+    close(fd);
+
+    DIR *dir = opendir(".");
+    struct dirent *entry;
+    if (dir) {
+        while ((entry = readdir(dir)) != NULL)
+            printf("%s\n", entry->d_name);
+        closedir(dir);
+    }
+    return 0;
+}#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <stdio.h>
+
+int main(void) {
+    int fd = open("sample.txt", O_CREAT | O_RDWR, 0644);
+    if (fd < 0) { perror("open"); return 1; }
+
+    int flags = fcntl(fd, F_GETFL);
+    printf("File flags: %d\n", flags);
+    write(fd, "Example\n", 8);
+    printf("Current offset: %ld\n", (long)lseek(fd, 0, SEEK_CUR));
+
+    struct stat info;
+    if (stat("sample.txt", &info) == 0)
+        printf("File size: %ld bytes\n", (long)info.st_size);
+    close(fd);
+
+    DIR *dir = opendir(".");
+    struct dirent *entry;
+    if (dir) {
+        while ((entry = readdir(dir)) != NULL)
+            printf("%s\n", entry->d_name);
+        closedir(dir);
+    }
+    return 0;
+}
