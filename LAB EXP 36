@@ -1,0 +1,29 @@
+#include <stdio.h>
+
+int main(void) {
+    int n, blocks[50];
+
+    printf("Number of blocks: ");
+    scanf("%d", &n);
+    printf("Enter block numbers in file order: ");
+    for (int i = 0; i < n; i++) scanf("%d", &blocks[i]);
+
+    printf("Start=%d End=%d\n", blocks[0], blocks[n - 1]);
+    for (int i = 0; i < n; i++)
+        printf("Block %d -> %d\n", blocks[i], i == n - 1 ? -1 : blocks[i + 1]);
+    return 0;
+}#include <stdio.h>
+
+int main(void) {
+    int n, blocks[50];
+
+    printf("Number of blocks: ");
+    scanf("%d", &n);
+    printf("Enter block numbers in file order: ");
+    for (int i = 0; i < n; i++) scanf("%d", &blocks[i]);
+
+    printf("Start=%d End=%d\n", blocks[0], blocks[n - 1]);
+    for (int i = 0; i < n; i++)
+        printf("Block %d -> %d\n", blocks[i], i == n - 1 ? -1 : blocks[i + 1]);
+    return 0;
+}
