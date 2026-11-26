@@ -1,0 +1,111 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MODE 0  /* 0=FCFS, 1=SCAN, 2=C-SCAN */
+#define MAX 50
+
+int main(void) {
+    int n, request[MAX], head, total = 0;
+    printf("Number of requests: ");
+    scanf("%d", &n);
+    printf("Enter requests (0-199): ");
+    for (int i = 0; i < n; i++) scanf("%d", &request[i]);
+    printf("Initial head position: ");
+    scanf("%d", &head);
+
+    if (MODE != 0) {
+        for (int i = 0; i < n; i++)
+            for (int j = i + 1; j < n; j++)
+                if (request[i] > request[j]) {
+                    int t = request[i]; request[i] = request[j]; request[j] = t;
+                }
+    }
+
+    printf("Head movement: %d", head);
+    if (MODE == 0) {
+        for (int i = 0; i < n; i++) {
+            total += abs(head - request[i]);
+            head = request[i];
+            printf(" -> %d", head);
+        }
+    } else {
+        int split = 0;
+        while (split < n && request[split] < head) split++;
+
+        for (int i = split; i < n; i++) {
+            total += abs(head - request[i]); head = request[i];
+            printf(" -> %d", head);
+        }
+
+        if (MODE == 1) {
+            total += abs(head - 199); head = 199;
+            printf(" -> 199");
+        } else if (split > 0) {
+            total += abs(head - 199) + 199; head = 0;
+            printf(" -> 199 -> 0");
+        }
+
+        for (int i = split - 1; i >= 0; i--) {
+            total += abs(head - request[i]); head = request[i];
+            printf(" -> %d", head);
+        }
+    }
+
+    printf("\nTotal movement: %d\n", total);
+    return 0;
+}#include <stdio.h>
+#include <stdlib.h>
+
+#define MODE 0  /* 0=FCFS, 1=SCAN, 2=C-SCAN */
+#define MAX 50
+
+int main(void) {
+    int n, request[MAX], head, total = 0;
+    printf("Number of requests: ");
+    scanf("%d", &n);
+    printf("Enter requests (0-199): ");
+    for (int i = 0; i < n; i++) scanf("%d", &request[i]);
+    printf("Initial head position: ");
+    scanf("%d", &head);
+
+    if (MODE != 0) {
+        for (int i = 0; i < n; i++)
+            for (int j = i + 1; j < n; j++)
+                if (request[i] > request[j]) {
+                    int t = request[i]; request[i] = request[j]; request[j] = t;
+                }
+    }
+
+    printf("Head movement: %d", head);
+    if (MODE == 0) {
+        for (int i = 0; i < n; i++) {
+            total += abs(head - request[i]);
+            head = request[i];
+            printf(" -> %d", head);
+        }
+    } else {
+        int split = 0;
+        while (split < n && request[split] < head) split++;
+
+        for (int i = split; i < n; i++) {
+            total += abs(head - request[i]); head = request[i];
+            printf(" -> %d", head);
+        }
+
+        if (MODE == 1) {
+            total += abs(head - 199); head = 199;
+            printf(" -> 199");
+        } else if (split > 0) {
+            total += abs(head - 199) + 199; head = 0;
+            printf(" -> 199 -> 0");
+        }
+
+        for (int i = split - 1; i >= 0; i--) {
+            total += abs(head - request[i]); head = request[i];
+            printf(" -> %d", head);
+        }
+    }
+
+    printf("\nTotal movement: %d\n", total);
+    return 0;
+}
