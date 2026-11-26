@@ -1,0 +1,21 @@
+#include <sys/stat.h>
+#include <stdio.h>
+
+int main(void) {
+    if (chmod("sample.txt", 0754) == -1) {
+        perror("chmod");
+        return 1;
+    }
+    printf("Set sample.txt permissions to rwxr-xr--\n");
+    return 0;
+}#include <sys/stat.h>
+#include <stdio.h>
+
+int main(void) {
+    if (chmod("sample.txt", 0754) == -1) {
+        perror("chmod");
+        return 1;
+    }
+    printf("Set sample.txt permissions to rwxr-xr--\n");
+    return 0;
+}
